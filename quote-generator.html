@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金句卡片產生器｜人生卡關，翻書看看</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f5f4f0;
+    --card-bg: #ffffff;
+    --text: #222222;
+    --text-sub: #888888;
+    --border: #e0e0e0;
+    --accent: #1a1a1a;
+    --tag-bg: #ffffff;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* HEADER */
+  header {
+    padding: 36px 40px 28px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+  }
+  header h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 5px;
+    color: #333;
+  }
+  header span {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #bbb;
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: flex;
+    gap: 0;
+    min-height: calc(100vh - 89px);
+  }
+
+  /* LEFT PANEL */
+  .panel {
+    width: 320px;
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #aaa;
+    margin-bottom: 8px;
+    display: block;
+    text-transform: uppercase;
+  }
+
+  .input-wrap input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    letter-spacing: 1px;
+    transition: border-color 0.2s;
+  }
+  .input-wrap input:focus { border-color: #999; background: #fff; }
+
+  .gen-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 12px;
+    letter-spacing: 5px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .gen-btn:hover { background: #333; }
+  .gen-btn:active { transform: scale(0.99); }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* CONTROLS */
+  .ctrl-row { display: flex; gap: 8px; }
+  .ctrl-row .ctrl-group { flex: 1; }
+
+  .toggle-btns { display: flex; gap: 5px; }
+  .tbn {
+    flex: 1;
+    padding: 8px 4px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tbn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .source-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 12px;
+    color: #666;
+    outline: none;
+    letter-spacing: 2px;
+  }
+  .source-input:focus { border-color: #999; background: #fff; }
+
+  /* QUICK TAGS */
+  .quick-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .qtag {
+    padding: 5px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    color: #666;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+  .qtag:hover { background: #eee; border-color: #bbb; }
+
+  .dl-all-btn {
+    width: 100%;
+    padding: 13px;
+    background: #fff;
+    color: #444;
+    border: 1px solid var(--border);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: auto;
+  }
+  .dl-all-btn:hover { background: var(--bg); border-color: #aaa; }
+
+  /* RIGHT: CARDS GRID */
+  .cards-area {
+    flex: 1;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+
+  .card-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card-num {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #ccc;
+    text-align: center;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .canvas-wrap:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.10); }
+
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    background: #fff;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .edit-btn, .dl-btn {
+    flex: 1;
+    padding: 7px 4px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .edit-btn { background: #fff; color: #666; }
+  .edit-btn:hover { background: var(--bg); }
+  .dl-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .dl-btn:hover { background: #333; }
+
+  /* EDIT MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fff;
+    width: 360px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: #444;
+  }
+  .modal textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 15px;
+    color: #333;
+    line-height: 1.8;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    letter-spacing: 1px;
+    background: var(--bg);
+  }
+  .modal textarea:focus { border-color: #999; background: #fff; }
+  .modal-btns { display: flex; gap: 8px; }
+  .modal-save {
+    flex: 1;
+    padding: 12px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    letter-spacing: 3px;
+    cursor: pointer;
+  }
+  .modal-cancel {
+    padding: 12px 16px;
+    background: #fff;
+    color: #666;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    gap: 16px;
+    color: #ccc;
+  }
+  .empty-state .big { font-family: 'Noto Serif TC', serif; font-size: 48px; }
+  .empty-state p { font-size: 13px; letter-spacing: 3px; }
+
+  /* LIGHTBOX */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    padding: 24px;
+  }
+  .lightbox.show { opacity: 1; pointer-events: all; }
+
+  .lightbox-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-height: 90vh;
+  }
+
+  .lightbox-inner img {
+    max-height: 78vh;
+    max-width: 90vw;
+    width: auto;
+    display: block;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+
+  .lightbox-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .lb-dl-btn {
+    padding: 12px 28px;
+    background: #fff;
+    color: #222;
+    border: none;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .lb-dl-btn:hover { background: #eee; }
+
+  .lb-edit-btn {
+    padding: 12px 28px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .lb-edit-btn:hover { border-color: #fff; }
+
+  .lb-close {
+    position: absolute;
+    top: -16px;
+    right: -16px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .lb-close:hover { background: rgba(255,255,255,0.3); }
+
+  .lb-nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.15s;
+    z-index: 201;
+  }
+  .lb-nav:hover { background: rgba(255,255,255,0.3); }
+  .lb-prev { left: 20px; }
+  .lb-next { right: 20px; }
+
+  .lb-counter {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .canvas-wrap { cursor: zoom-in; }
+
+  @media (max-width: 900px) {
+    .main { flex-direction: column; }
+    .panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+    header { padding: 20px; }
+    .cards-area { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>金句卡片產生器</h1>
+  <span>人生卡關，翻書看看</span>
+</header>
+
+<div class="main">
+  <!-- LEFT PANEL -->
+  <div class="panel">
+
+    <div class="input-wrap">
+      <span class="field-label">輸入關鍵字或主題</span>
+      <input type="text" id="kw" placeholder="例：不被選擇、感情、卡關…" />
+    </div>
+
+    <button class="gen-btn" onclick="generateAll()">生成五張金句卡片</button>
+
+    <hr class="divider">
+
+    <div>
+      <span class="field-label">署名</span>
+      <input type="text" class="source-input" id="srcInput" value="人生卡關，翻書看看" oninput="redrawAll()">
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <span class="field-label">文字大小</span>
+        <div class="toggle-btns" id="szBtns">
+          <button class="tbn" onclick="setSz('s',this)">小</button>
+          <button class="tbn on" onclick="setSz('m',this)">中</button>
+          <button class="tbn" onclick="setSz('l',this)">大</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <span class="field-label">對齊方式</span>
+        <div class="toggle-btns" id="alBtns">
+          <button class="tbn on" onclick="setAl('left',this)">左</button>
+          <button class="tbn" onclick="setAl('center',this)">中</button>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div>
+      <span class="field-label">快速主題</span>
+      <div class="quick-tags">
+        <span class="qtag" onclick="setKwGen('不被選擇')">不被選擇</span>
+        <span class="qtag" onclick="setKwGen('自信')">自信</span>
+        <span class="qtag" onclick="setKwGen('迷失')">迷失</span>
+        <span class="qtag" onclick="setKwGen('感情')">感情</span>
+        <span class="qtag" onclick="setKwGen('卡關')">卡關</span>
+        <span class="qtag" onclick="setKwGen('失敗')">失敗</span>
+        <span class="qtag" onclick="setKwGen('職場')">職場</span>
+        <span class="qtag" onclick="setKwGen('家人')">家人</span>
+        <span class="qtag" onclick="setKwGen('愧疚')">愧疚</span>
+        <span class="qtag" onclick="setKwGen('等待')">等待</span>
+        <span class="qtag" onclick="setKwGen('強')">強者</span>
+        <span class="qtag" onclick="setKwGen('饒恕')">饒恕</span>
+      </div>
+    </div>
+
+    <button class="dl-all-btn" onclick="downloadAll()">全部下載（五張）</button>
+
+  </div>
+
+  <!-- CARDS AREA -->
+  <div class="cards-area">
+    <div class="cards-grid" id="cardsGrid">
+      <!-- empty state -->
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="big">翻</div>
+        <p>輸入關鍵字，生成五張金句卡片</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lb-nav lb-prev" onclick="lbNav(-1);event.stopPropagation()">&#8249;</button>
+  <button class="lb-nav lb-next" onclick="lbNav(1);event.stopPropagation()">&#8250;</button>
+  <div class="lightbox-inner" onclick="event.stopPropagation()">
+    <button class="lb-close" onclick="closeLightboxDirect()">&#215;</button>
+    <img id="lbImg" src="" alt="">
+    <div class="lb-counter" id="lbCounter">1 / 5</div>
+    <div class="lightbox-actions">
+      <button class="lb-dl-btn" onclick="lbDownload()">下載這張</button>
+      <button class="lb-edit-btn" onclick="lbEdit()">編輯文字</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>編輯金句</h3>
+    <textarea id="modalText" rows="4"></textarea>
+    <div class="modal-btns">
+      <button class="modal-save" onclick="saveModal()">確認</button>
+      <button class="modal-cancel" onclick="closeModalDirect()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────
+var sz = 'm';
+var al = 'left';
+var quotes = ['','','','',''];
+var editIdx = -1;
+
+var fontSizes = { s: 40, m: 52, l: 66 };
+var OUT_W = 1080, OUT_H = 1350;
+
+// ─── QUOTE BANK ──────────────────────────────────────
+var allQuotes = [
+  // 不被選擇
+  '不被選擇，\n不代表你不好。',
+  '被放棄過，\n不等於你不值得被愛。',
+  '沒有被選上，\n不是你的問題。',
+  '有人看不見你的好，\n不代表你的好不存在。',
+  '不被需要的感覺很痛，\n但你的價值不由此決定。',
+  // 自信
+  '你不需要先變好，\n才值得被愛。',
+  '你對自己的評價，\n不應該由別人的眼光決定。',
+  '你夠好了，\n只是還沒遇到看得見的人。',
+  '不確定自己的時候，\n先停下來，不要急著否定自己。',
+  '你的不完美，\n沒有你想的那麼嚴重。',
+  // 迷失
+  '迷失不是終點，\n回頭永遠來得及。',
+  '找不到方向的時候，\n先停下來，也是一種勇氣。',
+  '走錯路不可怕，\n可怕是不願意重新出發。',
+  '迷失過的人，\n往往更知道自己想要什麼。',
+  '不知道去哪裡，\n不等於哪裡都去不了。',
+  // 感情
+  '愛，是希望對方好，\n就算那個好不一定包括你。',
+  '你是在愛，\n還是在害怕失去？',
+  '真正的愛，\n不會讓你只是痛苦。',
+  '兩個完整的人相遇，\n才叫做愛情。',
+  '在一起了卻更孤單，\n不是你的錯。',
+  // 卡關
+  '卡關不是因為你不夠好，\n是因為你還沒翻到那一頁。',
+  '走不動的時候，\n先坐下來，不是放棄。',
+  '卡住了，\n先翻翻書再說。',
+  '卡關是一個信號，\n不是句點。',
+  '每個卡關，\n都是在問你一個重要的問題。',
+  // 失敗
+  '跌倒\n不代表結束。',
+  '失敗過，\n才知道哪條路不對。',
+  '做錯了不等於你是壞人，\n願意承認，才是真的勇敢。',
+  '最難的不是跌倒，\n是跌倒後還願意站起來。',
+  '失敗的那一天，\n不是你人生的定義。',
+  // 職場
+  '努力沒有被看見，\n不代表努力沒有意義。',
+  '在小地方忠心，\n是一種很難得的品格。',
+  '等待被發現，\n不如先做好眼前的事。',
+  '今天的撐著，\n是明天的底氣。',
+  '你做的每一件認真的事，\n都不會白費。',
+  // 家人
+  '家人傷過你，\n不代表關係只能就這樣結束。',
+  '有些話說不出口，\n但愛一直都在。',
+  '回頭永遠來得及，\n只要門還開著。',
+  '父母也是第一次當父母，\n他們也在學。',
+  '放手，\n有時候也是一種愛。',
+  // 愧疚
+  '做錯了，\n還願意承認，就已經很不容易了。',
+  '愧疚不是用來折磨自己的，\n是用來讓你改變的。',
+  '你犯的錯，\n不是你這個人的全部。',
+  '原諒自己，\n不是逃避，是讓自己繼續走下去。',
+  '已經盡力了，\n就夠了。',
+  // 等待
+  '等待不是浪費，\n是另一種形式的預備。',
+  '還沒到的，\n不代表不會來。',
+  '有些事需要時間，\n不是你不夠努力。',
+  '等待的人，\n往往更珍惜到來的那一刻。',
+  '慢慢來，\n也是一種走法。',
+  // 強
+  '真正的強，\n是不需要證明自己。',
+  '能說出我很難受，\n才是真的勇敢。',
+  '強不是不怕，\n是怕了還是繼續。',
+  '低下身子，\n需要比高高在上更大的力量。',
+  '選擇饒恕，\n比選擇報復更需要勇氣。',
+  // 饒恕
+  '放下恨，\n需要比報復更大的力量。',
+  '饒恕不是替對方開脫，\n是讓自己自由。',
+  '不是為了對方，\n而是為了自己放手。',
+  '帶著恨走，\n比你想像的更累。',
+  '放下，\n不是忘記，是不再讓它傷你。'
+];
+
+var keywordMap = {
+  '不被選擇': [0,1,2,3,4],
+  '選擇': [0,1,2,3,4],
+  '自信': [5,6,7,8,9],
+  '認知': [5,6,7,8,9],
+  '低落': [5,6,7,8,9],
+  '迷失': [10,11,12,13,14],
+  '方向': [10,11,12,13,14],
+  '感情': [15,16,17,18,19],
+  '愛情': [15,16,17,18,19],
+  '卡關': [20,21,22,23,24],
+  '失敗': [25,26,27,28,29],
+  '職場': [30,31,32,33,34],
+  '工作': [30,31,32,33,34],
+  '家人': [35,36,37,38,39],
+  '父母': [35,36,37,38,39],
+  '夫妻': [35,36,37,38,39],
+  '愧疚': [40,41,42,43,44],
+  '等待': [45,46,47,48,49],
+  '強': [50,51,52,53,54],
+  '強者': [50,51,52,53,54],
+  '饒恕': [55,56,57,58,59],
+};
+
+// ─── CONTROLS ────────────────────────────────────────
+function setSz(v, el) {
+  sz = v;
+  document.querySelectorAll('#szBtns .tbn').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  redrawAll();
+}
+function setAl(v, el) {
+  al = v;
+  document.querySelectorAll('#alBtns .tbn').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  redrawAll();
+}
+function setKwGen(kw) {
+  document.getElementById('kw').value = kw;
+  generateAll();
+}
+
+// ─── GENERATE ────────────────────────────────────────
+function generateAll() {
+  var kw = document.getElementById('kw').value.trim();
+  var pool = null;
+
+  if (kw) {
+    var keys = Object.keys(keywordMap);
+    for (var i = 0; i < keys.length; i++) {
+      if (kw.indexOf(keys[i]) >= 0 || keys[i].indexOf(kw) >= 0) {
+        pool = keywordMap[keys[i]].map(function(idx){ return allQuotes[idx]; });
+        break;
+      }
+    }
+  }
+
+  if (!pool) {
+    // random 5 from all, no repeats
+    var shuffled = allQuotes.slice().sort(function(){ return Math.random()-0.5; });
+    pool = shuffled.slice(0, 5);
+  } else {
+    // shuffle pool
+    pool = pool.slice().sort(function(){ return Math.random()-0.5; });
+  }
+
+  quotes = pool.slice(0, 5);
+  renderGrid();
+}
+
+// ─── RENDER GRID ─────────────────────────────────────
+function renderGrid() {
+  var grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+
+  for (var i = 0; i < 5; i++) {
+    var slot = document.createElement('div');
+    slot.className = 'card-slot';
+    slot.innerHTML =
+      '<div class="card-num">' + (i+1) + ' / 5</div>' +
+      '<div class="canvas-wrap" id="wrap' + i + '" onclick="openLightbox(' + i + ')">' +
+        '<canvas id="cv' + i + '" width="1080" height="1350"></canvas>' +
+      '</div>' +
+      '<div class="card-actions">' +
+        '<button class="edit-btn" onclick="openModal(' + i + ')">編輯</button>' +
+        '<button class="dl-btn" onclick="downloadOne(' + i + ')">下載</button>' +
+      '</div>';
+    grid.appendChild(slot);
+    paintCard(i);
+  }
+}
+
+function redrawAll() {
+  if (quotes[0] === '') return;
+  for (var i = 0; i < 5; i++) paintCard(i);
+}
+
+// ─── PAINT ───────────────────────────────────────────
+function paintCard(idx) {
+  var cv = document.getElementById('cv' + idx);
+  if (!cv) return;
+  var src = document.getElementById('srcInput').value || '';
+  var text = quotes[idx] || '';
+  paint(cv, OUT_W, OUT_H, text, src);
+  // refresh lightbox if showing this card
+  var lb = document.getElementById('lightbox');
+  if (lb.classList.contains('show') && lbIdx === idx) updateLightbox();
+}
+
+function paint(cv, w, h, text, src) {
+  var ctx = cv.getContext('2d');
+  cv.width = w; cv.height = h;
+  var scale = w / 1080;
+  var f = Math.round(fontSizes[sz] * scale);
+  var pad = Math.round(w * 0.12);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.lineWidth = Math.max(0.5, scale);
+  ctx.strokeRect(0.5, 0.5, w-1, h-1);
+
+  ctx.fillStyle = '#333333';
+  ctx.font = '400 ' + f + 'px "Noto Serif TC", serif';
+  ctx.textBaseline = 'alphabetic';
+
+  var lines = text.split('\n');
+  var lh = f * 2.0;
+  var totalH = (lines.length - 1) * lh + f;
+  var startY = (h - totalH) / 2 + f * 0.05;
+
+  for (var i = 0; i < lines.length; i++) {
+    var y = startY + i * lh;
+    if (al === 'left') {
+      ctx.textAlign = 'left';
+      ctx.fillText(lines[i], pad, y);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.fillText(lines[i], w/2, y);
+    }
+  }
+
+  var ss = Math.round(f * 0.32);
+  ctx.font = '300 ' + ss + 'px "Noto Sans TC", sans-serif';
+  ctx.fillStyle = '#cccccc';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(src, w - pad * 0.6, h - pad * 0.5);
+}
+
+// ─── DOWNLOAD ────────────────────────────────────────
+function downloadOne(idx) {
+  var off = document.createElement('canvas');
+  var src = document.getElementById('srcInput').value || '';
+  paint(off, OUT_W, OUT_H, quotes[idx], src);
+  var a = document.createElement('a');
+  var slug = quotes[idx].replace(/\n/g,'').substring(0,10);
+  a.download = '金句_' + (idx+1) + '_' + slug + '.png';
+  a.href = off.toDataURL('image/png');
+  a.click();
+}
+
+function downloadAll() {
+  if (!quotes[0]) { alert('請先生成金句卡片'); return; }
+  var src = document.getElementById('srcInput').value || '';
+  for (var i = 0; i < 5; i++) {
+    (function(idx){
+      setTimeout(function(){
+        var off = document.createElement('canvas');
+        paint(off, OUT_W, OUT_H, quotes[idx], src);
+        var a = document.createElement('a');
+        var slug = quotes[idx].replace(/\n/g,'').substring(0,10);
+        a.download = '金句_' + (idx+1) + '_' + slug + '.png';
+        a.href = off.toDataURL('image/png');
+        a.click();
+      }, idx * 400);
+    })(i);
+  }
+}
+
+// ─── EDIT MODAL ──────────────────────────────────────
+function openModal(idx) {
+  editIdx = idx;
+  document.getElementById('modalText').value = quotes[idx];
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(e) {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+function saveModal() {
+  quotes[editIdx] = document.getElementById('modalText').value;
+  paintCard(editIdx);
+  closeModalDirect();
+}
+
+// ─── LIGHTBOX ────────────────────────────────────────
+var lbIdx = 0;
+
+function openLightbox(idx) {
+  lbIdx = idx;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('show');
+}
+
+function updateLightbox() {
+  var cv = document.getElementById('cv' + lbIdx);
+  if (!cv) return;
+  document.getElementById('lbImg').src = cv.toDataURL('image/png');
+  document.getElementById('lbCounter').textContent = (lbIdx + 1) + ' / 5';
+}
+
+function lbNav(dir) {
+  lbIdx = (lbIdx + dir + 5) % 5;
+  updateLightbox();
+}
+
+function closeLightbox(e) {
+  document.getElementById('lightbox').classList.remove('show');
+}
+function closeLightboxDirect() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+function lbDownload() { downloadOne(lbIdx); }
+function lbEdit() {
+  closeLightboxDirect();
+  openModal(lbIdx);
+}
+
+// keyboard nav
+document.addEventListener('keydown', function(e) {
+  var lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('show')) return;
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  if (e.key === 'ArrowRight') lbNav(1);
+  if (e.key === 'Escape') closeLightboxDirect();
+});
+
+// ─── FONTS READY ─────────────────────────────────────
+document.fonts.ready.then(function(){ redrawAll(); });
+</script>
+</body>
+</html>
