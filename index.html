@@ -549,79 +549,92 @@ var fontSizes = { s: 40, m: 52, l: 66 };
 var OUT_W = 1080, OUT_H = 1350;
 
 // ─── QUOTE BANK ──────────────────────────────────────
+// 每筆格式：{ text, ref }
 var allQuotes = [
-  // 不被選擇
-  '不被選擇，\n不代表你不好。',
-  '被放棄過，\n不等於你不值得被愛。',
-  '沒有被選上，\n不是你的問題。',
-  '有人看不見你的好，\n不代表你的好不存在。',
-  '不被需要的感覺很痛，\n但你的價值不由此決定。',
-  // 自信
-  '你不需要先變好，\n才值得被愛。',
-  '你對自己的評價，\n不應該由別人的眼光決定。',
-  '你夠好了，\n只是還沒遇到看得見的人。',
-  '不確定自己的時候，\n先停下來，不要急著否定自己。',
-  '你的不完美，\n沒有你想的那麼嚴重。',
-  // 迷失
-  '迷失不是終點，\n回頭永遠來得及。',
-  '找不到方向的時候，\n先停下來，也是一種勇氣。',
-  '走錯路不可怕，\n可怕是不願意重新出發。',
-  '迷失過的人，\n往往更知道自己想要什麼。',
-  '不知道去哪裡，\n不等於哪裡都去不了。',
-  // 感情
-  '愛，是希望對方好，\n就算那個好不一定包括你。',
-  '你是在愛，\n還是在害怕失去？',
-  '真正的愛，\n不會讓你只是痛苦。',
-  '兩個完整的人相遇，\n才叫做愛情。',
-  '在一起了卻更孤單，\n不是你的錯。',
-  // 卡關
-  '卡關不是因為你不夠好，\n是因為你還沒翻到那一頁。',
-  '走不動的時候，\n先坐下來，不是放棄。',
-  '卡住了，\n先翻翻書再說。',
-  '卡關是一個信號，\n不是句點。',
-  '每個卡關，\n都是在問你一個重要的問題。',
-  // 失敗
-  '跌倒\n不代表結束。',
-  '失敗過，\n才知道哪條路不對。',
-  '做錯了不等於你是壞人，\n願意承認，才是真的勇敢。',
-  '最難的不是跌倒，\n是跌倒後還願意站起來。',
-  '失敗的那一天，\n不是你人生的定義。',
-  // 職場
-  '努力沒有被看見，\n不代表努力沒有意義。',
-  '在小地方忠心，\n是一種很難得的品格。',
-  '等待被發現，\n不如先做好眼前的事。',
-  '今天的撐著，\n是明天的底氣。',
-  '你做的每一件認真的事，\n都不會白費。',
-  // 家人
-  '家人傷過你，\n不代表關係只能就這樣結束。',
-  '有些話說不出口，\n但愛一直都在。',
-  '回頭永遠來得及，\n只要門還開著。',
-  '父母也是第一次當父母，\n他們也在學。',
-  '放手，\n有時候也是一種愛。',
-  // 愧疚
-  '做錯了，\n還願意承認，就已經很不容易了。',
-  '愧疚不是用來折磨自己的，\n是用來讓你改變的。',
-  '你犯的錯，\n不是你這個人的全部。',
-  '原諒自己，\n不是逃避，是讓自己繼續走下去。',
-  '已經盡力了，\n就夠了。',
-  // 等待
-  '等待不是浪費，\n是另一種形式的預備。',
-  '還沒到的，\n不代表不會來。',
-  '有些事需要時間，\n不是你不夠努力。',
-  '等待的人，\n往往更珍惜到來的那一刻。',
-  '慢慢來，\n也是一種走法。',
-  // 強
-  '真正的強，\n是不需要證明自己。',
-  '能說出我很難受，\n才是真的勇敢。',
-  '強不是不怕，\n是怕了還是繼續。',
-  '低下身子，\n需要比高高在上更大的力量。',
-  '選擇饒恕，\n比選擇報復更需要勇氣。',
-  // 饒恕
-  '放下恨，\n需要比報復更大的力量。',
-  '饒恕不是替對方開脫，\n是讓自己自由。',
-  '不是為了對方，\n而是為了自己放手。',
-  '帶著恨走，\n比你想像的更累。',
-  '放下，\n不是忘記，是不再讓它傷你。'
+  // 不被選擇 [0-4]
+  { text: '神看人不像人看人。\n人看外表，神看內心。', ref: '撒母耳記上 16:7' },
+  { text: '你不需要先變好，\n才值得被愛。', ref: '路加福音 15:20' },
+  { text: '大衛連父親都忘了叫他，\n但神沒有忘記他。', ref: '撒母耳記上 16:11-12' },
+  { text: '沒有人要你的時候，\n神還是在那裡。', ref: '創世記 21:17' },
+  { text: '不被選擇，\n不代表你沒有位置。', ref: '創世記 29:31' },
+  // 自信 [5-9]
+  { text: '我靠著那加給我力量的，\n凡事都能做。', ref: '腓立比書 4:13' },
+  { text: '神揀選的標準，\n從來不是你有多厲害。', ref: '出埃及記 4:10-12' },
+  { text: '我在你母腹中造你之前，\n已經認識你了。', ref: '耶利米書 1:5' },
+  { text: '你不確定自己，\n但神從一開始就確定你。', ref: '士師記 6:15-16' },
+  { text: '神不需要你先準備好，\n才對你說話。', ref: '撒母耳記上 3:8-10' },
+  // 迷失 [10-14]
+  { text: '你往哪裡去，\n我也往那裡去。', ref: '路得記 1:16' },
+  { text: '迷失不是終點，\n回頭永遠來得及。', ref: '路加福音 15:20' },
+  { text: '約拿以為在逃，\n其實只是繞了一圈。', ref: '約拿書 1-2章' },
+  { text: '浪子回頭那一刻，\n父親遠遠就跑來迎接他。', ref: '路加福音 15:20' },
+  { text: '以利亞逃到曠野，\n神差天使來餵他吃東西。', ref: '列王記上 19:5-8' },
+  // 感情 [15-19]
+  { text: '愛是不求自己的益處，\n不輕易發怒。', ref: '哥林多前書 13:5' },
+  { text: '那七年在他看來，\n不過是幾天。', ref: '創世記 29:20' },
+  { text: '兩個完整的人相遇，\n才叫做愛情。', ref: '創世記 2:19-22' },
+  { text: '要愛鄰舍，\n如同愛自己。', ref: '馬可福音 12:31' },
+  { text: '在一起了卻更孤單，\n不是你的錯。', ref: '創世記 25:22' },
+  // 卡關 [20-24]
+  { text: '起來吃吧，\n因為你當走的路甚遠。', ref: '列王記上 19:7' },
+  { text: '你們中間為大的，\n要作你們的用人。', ref: '馬太福音 23:11' },
+  { text: '走投無路的時候，\n出路往往從意想不到的地方來。', ref: '列王記下 4:1-7' },
+  { text: '卡關是一個信號，\n不是句點。', ref: '約拿書 2:1' },
+  { text: '神的意思是好的，\n就算人的意思是要害你。', ref: '創世記 50:20' },
+  // 失敗 [25-29]
+  { text: '彼得三次否認耶穌，\n耶穌復活後親自去恢復他。', ref: '約翰福音 21:15' },
+  { text: '跌倒不代表結束，\n大衛跌倒後仍被稱為合神心意的人。', ref: '詩篇 51:4' },
+  { text: '做錯了誠實面對，\n神沒有丟下大衛。', ref: '詩篇 51:10' },
+  { text: '失敗的那一天，\n不是你人生的定義。', ref: '路加福音 22:61-62' },
+  { text: '最難的不是跌倒，\n是跌倒後還願意站起來。', ref: '約翰福音 21:17' },
+  // 職場 [30-34]
+  { text: '他手所辦的事，\n耶和華都賜福給他。', ref: '創世記 39:3' },
+  { text: '在小地方忠心，\n是一種很難得的品格。', ref: '創世記 39:3' },
+  { text: '我做的事甚大，\n不能下去。', ref: '尼希米記 6:3' },
+  { text: '等待不是浪費，\n大衛等了二十年才登基。', ref: '撒母耳記上 16章' },
+  { text: '你做的每一件認真的事，\n都不會白費。', ref: '加拉太書 6:9' },
+  // 家人 [35-39]
+  { text: '不管中間發生了什麼，\n回頭永遠還有門。', ref: '路加福音 15:20' },
+  { text: '你們的意思是要害我，\n神的意思卻是好的。', ref: '創世記 50:20' },
+  { text: '放手，\n有時候也是一種愛。', ref: '出埃及記 2:3' },
+  { text: '有些話說不出口，\n但愛一直都在。', ref: '創世記 24:67' },
+  { text: '家人傷過你，\n不代表關係只能就這樣結束。', ref: '創世記 50:19-21' },
+  // 愧疚 [40-44]
+  { text: '我向你犯罪，\n唯獨得罪了你。', ref: '詩篇 51:4' },
+  { text: '雞一叫，彼得出去痛哭。\n但這不是他故事的結局。', ref: '路加福音 22:61-62' },
+  { text: '愧疚不是用來折磨自己的，\n是用來讓你改變的。', ref: '詩篇 51:10' },
+  { text: '你犯的錯，\n不是你這個人的全部。', ref: '約翰福音 21:15' },
+  { text: '父親看見他回來，\n遠遠就跑過去抱他。', ref: '路加福音 15:20' },
+  // 等待 [45-49]
+  { text: '等待不是浪費，\n是另一種形式的預備。', ref: '撒母耳記上 16-31章' },
+  { text: '那七年在他看來不過是幾天，\n因為他真的愛她。', ref: '創世記 29:20' },
+  { text: '還沒到的，\n不代表不會來。', ref: '希伯來書 11:8' },
+  { text: '撒拉等了二十五年，\n應許還是來了。', ref: '創世記 21:1-2' },
+  { text: '慢慢來，\n也是一種走法。', ref: '詩篇 27:14' },
+  // 強 [50-54]
+  { text: '真正的強，\n是不需要證明自己。', ref: '馬太福音 23:11' },
+  { text: '耶穌跪下幫門徒洗腳，\n這才是真正的強。', ref: '約翰福音 13:5' },
+  { text: '能說出我很難受，\n才是真的勇敢。', ref: '路加福音 22:44' },
+  { text: '父啊，赦免他們。\n放下恨，需要更大的力量。', ref: '路加福音 23:34' },
+  { text: '強不是不怕，\n是怕了還是繼續。', ref: '腓立比書 4:13' },
+  // 饒恕 [55-59]
+  { text: '放下恨，\n需要比報復更大的力量。', ref: '路加福音 23:34' },
+  { text: '你這可惡的奴才，\n我免了你所有的債。', ref: '馬太福音 18:32' },
+  { text: '饒恕不是替對方開脫，\n是讓自己自由。', ref: '馬太福音 18:23-35' },
+  { text: '你們各人若不從心裡饒恕，\n就得不到真正的自由。', ref: '馬太福音 18:35' },
+  { text: '放下，\n不是忘記，是不再讓它傷你。', ref: '以弗所書 4:32' },
+  // 疾病 [60-64]
+  { text: '女兒，你的信救了你。', ref: '馬可福音 5:34' },
+  { text: '撐了十二年，\n她還是沒有放棄。', ref: '馬可福音 5:25-34' },
+  { text: '我聽見你的禱告，\n看見你的眼淚。', ref: '列王記下 20:5' },
+  { text: '眼淚不是軟弱，\n神看見你哭的每一次。', ref: '列王記下 20:1-6' },
+  { text: '撐著，\n本身就是一種勇敢。', ref: '約伯記 3章' },
+  // 財務 [65-69]
+  { text: '走投無路的時候，\n出路往往從意想不到的地方來。', ref: '列王記下 4:1-7' },
+  { text: '你現在看見的低谷，\n不一定是故事的終點。', ref: '創世記 41:41' },
+  { text: '先讓自己撐住，\n才能繼續走下去。', ref: '列王記上 19:5-8' },
+  { text: '還清債務，\n心才真的輕鬆。', ref: '路加福音 19:8' },
+  { text: '油一直流，\n直到瓶子裝滿為止。', ref: '列王記下 4:6' },
 ];
 
 var keywordMap = {
@@ -646,6 +659,10 @@ var keywordMap = {
   '強': [50,51,52,53,54],
   '強者': [50,51,52,53,54],
   '饒恕': [55,56,57,58,59],
+  '疾病': [60,61,62,63,64],
+  '健康': [60,61,62,63,64],
+  '財務': [65,66,67,68,69],
+  '債務': [65,66,67,68,69],
 };
 
 // ─── CONTROLS ────────────────────────────────────────
@@ -682,11 +699,9 @@ function generateAll() {
   }
 
   if (!pool) {
-    // random 5 from all, no repeats
     var shuffled = allQuotes.slice().sort(function(){ return Math.random()-0.5; });
     pool = shuffled.slice(0, 5);
   } else {
-    // shuffle pool
     pool = pool.slice().sort(function(){ return Math.random()-0.5; });
   }
 
@@ -726,27 +741,29 @@ function paintCard(idx) {
   var cv = document.getElementById('cv' + idx);
   if (!cv) return;
   var src = document.getElementById('srcInput').value || '';
-  var text = quotes[idx] || '';
-  paint(cv, OUT_W, OUT_H, text, src);
-  // refresh lightbox if showing this card
+  var q = quotes[idx] || { text: '', ref: '' };
+  paint(cv, OUT_W, OUT_H, q.text, q.ref, src);
   var lb = document.getElementById('lightbox');
   if (lb.classList.contains('show') && lbIdx === idx) updateLightbox();
 }
 
-function paint(cv, w, h, text, src) {
+function paint(cv, w, h, text, ref, src) {
   var ctx = cv.getContext('2d');
   cv.width = w; cv.height = h;
   var scale = w / 1080;
   var f = Math.round(fontSizes[sz] * scale);
   var pad = Math.round(w * 0.12);
 
+  // background
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, w, h);
 
+  // border
   ctx.strokeStyle = '#e0e0e0';
   ctx.lineWidth = Math.max(0.5, scale);
   ctx.strokeRect(0.5, 0.5, w-1, h-1);
 
+  // quote text — centered in upper 65% of card
   ctx.fillStyle = '#333333';
   ctx.font = '400 ' + f + 'px "Noto Serif TC", serif';
   ctx.textBaseline = 'alphabetic';
@@ -754,7 +771,8 @@ function paint(cv, w, h, text, src) {
   var lines = text.split('\n');
   var lh = f * 2.0;
   var totalH = (lines.length - 1) * lh + f;
-  var startY = (h - totalH) / 2 + f * 0.05;
+  var zone = h * 0.65;
+  var startY = (zone - totalH) / 2 + f;
 
   for (var i = 0; i < lines.length; i++) {
     var y = startY + i * lh;
@@ -767,6 +785,22 @@ function paint(cv, w, h, text, src) {
     }
   }
 
+  // ref — below quote
+  if (ref) {
+    var rs = Math.round(f * 0.38);
+    ctx.font = '300 ' + rs + 'px "Noto Sans TC", sans-serif';
+    ctx.fillStyle = '#aaaaaa';
+    var refY = startY + lines.length * lh + Math.round(f * 0.6);
+    if (al === 'left') {
+      ctx.textAlign = 'left';
+      ctx.fillText('— ' + ref, pad, refY);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.fillText('— ' + ref, w/2, refY);
+    }
+  }
+
+  // source — bottom right
   var ss = Math.round(f * 0.44);
   ctx.font = '300 ' + ss + 'px "Noto Sans TC", sans-serif';
   ctx.fillStyle = '#aaaaaa';
@@ -779,9 +813,10 @@ function paint(cv, w, h, text, src) {
 function downloadOne(idx) {
   var off = document.createElement('canvas');
   var src = document.getElementById('srcInput').value || '';
-  paint(off, OUT_W, OUT_H, quotes[idx], src);
+  var q = quotes[idx] || { text: '', ref: '' };
+  paint(off, OUT_W, OUT_H, q.text, q.ref, src);
   var a = document.createElement('a');
-  var slug = quotes[idx].replace(/\n/g,'').substring(0,10);
+  var slug = q.text.replace(/\n/g,'').substring(0,10);
   a.download = '金句_' + (idx+1) + '_' + slug + '.png';
   a.href = off.toDataURL('image/png');
   a.click();
@@ -794,9 +829,10 @@ function downloadAll() {
     (function(idx){
       setTimeout(function(){
         var off = document.createElement('canvas');
-        paint(off, OUT_W, OUT_H, quotes[idx], src);
+        var q = quotes[idx] || { text: '', ref: '' };
+        paint(off, OUT_W, OUT_H, q.text, q.ref, src);
         var a = document.createElement('a');
-        var slug = quotes[idx].replace(/\n/g,'').substring(0,10);
+        var slug = q.text.replace(/\n/g,'').substring(0,10);
         a.download = '金句_' + (idx+1) + '_' + slug + '.png';
         a.href = off.toDataURL('image/png');
         a.click();
@@ -808,17 +844,14 @@ function downloadAll() {
 // ─── EDIT MODAL ──────────────────────────────────────
 function openModal(idx) {
   editIdx = idx;
-  document.getElementById('modalText').value = quotes[idx];
+  document.getElementById('modalText').value = quotes[idx] ? quotes[idx].text : '';
   document.getElementById('modalOverlay').classList.add('show');
 }
-function closeModal(e) {
-  document.getElementById('modalOverlay').classList.remove('show');
-}
-function closeModalDirect() {
-  document.getElementById('modalOverlay').classList.remove('show');
-}
+
 function saveModal() {
-  quotes[editIdx] = document.getElementById('modalText').value;
+  if (quotes[editIdx]) {
+    quotes[editIdx].text = document.getElementById('modalText').value;
+  }
   paintCard(editIdx);
   closeModalDirect();
 }
