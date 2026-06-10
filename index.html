@@ -450,6 +450,71 @@
     border-right: 1px solid var(--border);
   }
 
+  /* STORY MODE */
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border: none;
+    background: var(--bg);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .mode-btn.on {
+    background: #333;
+    color: #fff;
+  }
+  .mode-btn:not(:last-child) {
+    border-right: 1px solid var(--border);
+  }
+
+  .story-input-wrap {
+    display: none;
+  }
+  .story-input-wrap.show {
+    display: block;
+  }
+  .story-input-wrap textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.8;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    letter-spacing: 1px;
+  }
+  .story-input-wrap textarea:focus {
+    border-color: #999;
+    background: #fff;
+  }
+
+  .kw-wrap { display: block; }
+  .kw-wrap.hide { display: none; }
+
+  .gen-status {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #aaa;
+    text-align: center;
+    min-height: 14px;
+  }
+
   @media (max-width: 900px) {
     .main { flex-direction: column; }
     .panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
@@ -478,12 +543,34 @@
       </div>
     </div>
 
-    <div class="input-wrap">
-      <span class="field-label">輸入關鍵字或主題</span>
-      <input type="text" id="kw" placeholder="例：不被選擇、感情、卡關…" />
+    <div>
+      <span class="field-label">模式</span>
+      <div class="mode-toggle">
+        <button class="mode-btn on" onclick="setMode('quote', this)">金句卡片</button>
+        <button class="mode-btn" onclick="setMode('story', this)">生活故事<br><span style="font-size:10px;opacity:0.7">金剛經限定</span></button>
+      </div>
     </div>
 
-    <button class="gen-btn" onclick="generateAll()">生成五張金句卡片</button>
+    <!-- 金句模式 -->
+    <div class="kw-wrap" id="kwWrap">
+      <div class="input-wrap">
+        <span class="field-label">輸入關鍵字或主題</span>
+        <input type="text" id="kw" placeholder="例：不被選擇、感情、卡關…" />
+      </div>
+      <button class="gen-btn" onclick="generateAll()">生成五張金句卡片</button>
+    </div>
+
+    <!-- 故事模式 -->
+    <div class="story-input-wrap" id="storyWrap">
+      <span class="field-label">輸入一句金剛經金句</span>
+      <textarea id="storyQuote" placeholder="例：應無所住，而生其心。&#10;&#10;或從下方快速選擇"></textarea>
+      <hr class="divider" style="margin:12px 0">
+      <span class="field-label">或貼入 JSON 直接生成</span>
+      <textarea id="storyJson" placeholder='{"slides":[{"text":"..."},{"text":"..."},{"text":"..."},{"text":"..."},{"text":"..."}]}' style="min-height:100px;font-size:11px;font-family:monospace;letter-spacing:0"></textarea>
+      <button class="gen-btn" style="margin-top:10px" onclick="generateStory()">生成五張生活故事</button>
+    </div>
+
+    <div class="gen-status" id="genStatus"></div>
 
     <hr class="divider">
 
@@ -971,9 +1058,77 @@ function renderQuickTags() {
     var span = document.createElement('span');
     span.className = 'qtag';
     span.textContent = t.label;
-    span.onclick = function(){ setKwGen(t.kw); };
+    span.onclick = function(){
+      if (currentMode === 'story') {
+        // in story mode, find a matching quote and fill textarea
+        var kmap = diamondKeywordMap;
+        var bank = diamondQuotes;
+        var keys = Object.keys(kmap);
+        var matched = null;
+        for (var i = 0; i < keys.length; i++) {
+          if (t.kw.indexOf(keys[i]) >= 0 || keys[i].indexOf(t.kw) >= 0) {
+            var pool = kmap[keys[i]];
+            var q = bank[pool[Math.floor(Math.random() * pool.length)]];
+            matched = q.text.replace(/\n/g, '') + (q.ref ? '（' + q.ref + '）' : '');
+            break;
+          }
+        }
+        if (!matched) {
+          var q = bank[Math.floor(Math.random() * bank.length)];
+          matched = q.text.replace(/\n/g, '') + (q.ref ? '（' + q.ref + '）' : '');
+        }
+        document.getElementById('storyQuote').value = matched;
+      } else {
+        setKwGen(t.kw);
+      }
+    };
     container.appendChild(span);
   });
+}
+
+// ─── MODE ─────────────────────────────────────────────
+var currentMode = 'quote';
+
+function setMode(mode, el) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  if (mode === 'story') {
+    document.getElementById('kwWrap').classList.add('hide');
+    document.getElementById('storyWrap').classList.add('show');
+    setSource('diamond', document.querySelectorAll('.src-btn')[1]);
+    renderQuickTags();
+  } else {
+    document.getElementById('kwWrap').classList.remove('hide');
+    document.getElementById('storyWrap').classList.remove('show');
+  }
+}
+
+// ─── STORY GENERATION ─────────────────────────────────
+function generateStory() {
+  var jsonInput = document.getElementById('storyJson').value.trim();
+
+  if (jsonInput) {
+    try {
+      jsonInput = jsonInput.replace(/```json|```/g, '').trim();
+      var parsed = JSON.parse(jsonInput);
+      if (!parsed.slides || parsed.slides.length === 0) {
+        document.getElementById('genStatus').textContent = 'JSON 格式不對，請重新貼入';
+        return;
+      }
+      quotes = parsed.slides.map(function(s) {
+        return { text: s.text || '', ref: s.ref || '' };
+      });
+      renderGrid();
+      document.getElementById('genStatus').textContent = '生成完成';
+      document.getElementById('storyJson').value = '';
+    } catch(e) {
+      document.getElementById('genStatus').textContent = 'JSON 格式錯誤，請重新貼入';
+    }
+    return;
+  }
+
+  document.getElementById('genStatus').textContent = '請貼入 JSON 文案';
 }
 
 // ─── CONTROLS ────────────────────────────────────────
